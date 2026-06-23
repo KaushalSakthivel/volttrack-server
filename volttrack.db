@@ -1,0 +1,4 @@
+{"id":1,"name":"Karur Bypass Road Hub","location":"Near Lighthouse Corner, Karur","totalSlots":4,"bookedSlots":1,"power":"50 kW","type":"DC Fast","_id":"L4G8qvK7O6vDbxJc"}
+{"id":3,"name":"Karur Highway Corridor Node","location":"NH-44 Bypass Junction, Karur","totalSlots":5,"bookedSlots":5,"power":"150 kW","type":"Ultra Fast","_id":"bOboFsXTz6BmOy5d"}
+{"id":2,"name":"Gandhigram Central Station","location":"Opposite Vaniyar Mahal, Pasupathipalayam","totalSlots":3,"bookedSlots":2,"power":"22 kW","type":"AC Type 2","_id":"frEOGcsNExtgPPRp"}
+{"id":4,"name":"Velayuthampalayam Junction Hub","location":"Near Cauvery Bridge Access, Karur","totalSlots":4,"bookedSlots":0,"power":"50 kW","type":"DC Fast","_id":"gI8ZWWaaFlC77tQm"}
