@@ -13,7 +13,7 @@ const db = Datastore.create({ filename: 'volttrack.db', autoload: true });
 
 // Seed initial charging stations into the database if it's empty
 async function initializeDatabase() {
-  const count = await db.count({});
+  await db.remove({}, { multi: true }); // Wipe old data
   if (count === 0) {
     const initialStations = [
       { id: 1, name: "Karur Bypass Road Hub", location: "Near Lighthouse Corner, Karur", totalSlots: 4, bookedSlots: 1, power: "50 kW", type: "DC Fast" },
@@ -64,16 +64,18 @@ app.post('/api/stations/:id/book', async (req, res) => {
       return res.status(400).json({ success: false, error: "Grid Conflict: Selected station node is fully occupied!" });
     }
 
-    // 3. Secure Update: Safely increment slot numbers since threshold conditions match
+    // 3. Secure Update: Safely increment slot numbers matching both type formats
     await db.update(
-      { id: stationId },
+      { $or: [ { id: Number(stationId) }, { id: stationId } ] },
       { $inc: { bookedSlots: 1 } }
     );
 
-    // 4. Fetch the refreshed data model to return back out to our UI state
-    const updatedStation = await db.findOne({ id: stationId });
-    console.log(`[Database] Slot locked permanently for: ${station.name}`);
+    // 4. Fetch the refreshed data model using the same unified lookup path
+    const updatedStation = await db.findOne({ 
+      $or: [ { id: Number(stationId) }, { id: stationId } ] 
+    });
     
+    console.log(`[Database] Slot locked permanently for: ${station.name}`);
     res.json({ success: true, updatedStation });
 
   } catch (error) {
@@ -81,15 +83,17 @@ app.post('/api/stations/:id/book', async (req, res) => {
     res.status(500).json({ success: false, error: "Database transaction failed." });
   }
 });
+
 app.post('/api/register', async (req, res) => {
-    try {
-        console.log("Received registration data:", req.body);
-        res.json({ success: true, message: "User registered safely inside database placeholder loops!" });
-    } catch (error) {
-        console.error("Registration route error:", error);
-        res.status(500).json({ error: "Failed to process registration" });
-    }
+  try {
+    console.log("Received registration data:", req.body);
+    res.json({ success: true, message: "User registered safely inside database placeholder loops!" });
+  } catch (error) {
+    console.error("Registration route error:", error);
+    res.status(500).json({ error: "Failed to process registration" });
+  }
 });
+
 // 5. Start the Application Server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:5000`);
