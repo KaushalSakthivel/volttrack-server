@@ -50,8 +50,10 @@ app.post('/api/stations/:id/book', async (req, res) => {
   console.log(`[IoT Allocation Request] Booking initiated for Station ID: ${stationId}`);
 
   try {
-    // 1. Fetch the current station details first
-    const station = await db.findOne({ id: stationId });
+    // 1. Fetch the current station details first (checking both Number and String formats)
+    const station = await db.findOne({ 
+      $or: [ { id: Number(stationId) }, { id: stationId } ] 
+    });
 
     if (!station) {
       return res.status(404).json({ success: false, error: "Station node not found in registry" });
