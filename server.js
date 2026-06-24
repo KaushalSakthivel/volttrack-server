@@ -13,7 +13,8 @@ const db = Datastore.create({ filename: 'volttrack.db', autoload: true });
 
 // Seed initial charging stations into the database if it's empty
 async function initializeDatabase() {
-  await db.remove({}, { multi: true }); // Wipe old data
+  await db.remove({}, { multi: true }); // Wipe old data cleanly on start
+  const count = await db.count({});     // Correctly define count tracker
   if (count === 0) {
     const initialStations = [
       { id: 1, name: "Karur Bypass Road Hub", location: "Near Lighthouse Corner, Karur", totalSlots: 4, bookedSlots: 1, power: "50 kW", type: "DC Fast" },
