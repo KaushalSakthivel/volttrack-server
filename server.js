@@ -76,7 +76,15 @@ app.post('/api/stations/:id/book', async (req, res) => {
     res.status(500).json({ success: false, error: "Database transaction failed." });
   }
 });
-
+app.post('/api/register', async (req, res) => {
+    try {
+        console.log("Received registration data:", req.body);
+        res.json({ success: true, message: "User registered safely inside database placeholder loops!" });
+    } catch (error) {
+        console.error("Registration route error:", error);
+        res.status(500).json({ error: "Failed to process registration" });
+    }
+});
 // 5. Start the Application Server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:5000`);
