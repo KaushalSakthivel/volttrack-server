@@ -46,12 +46,15 @@ app.get('/api/stations', async (req, res) => {
 app.post('/api/stations/:id/book', async (req, res) => {
   const stationId = req.params.id;
 
+  // Print incoming booking telemetry directly to Render console
+  console.log(`[IoT Allocation Request] Booking initiated for Station ID: ${stationId}`);
+
   try {
     // 1. Fetch the current station details first
     const station = await db.findOne({ id: stationId });
 
     if (!station) {
-      return res.status(404).json({ success: false, error: "Station node not found in registry." });
+      return res.status(404).json({ success: false, error: "Station node not found in registry" });
     }
 
     // 2. Telemetry Gating Check: Validate if slots are already fully occupied
