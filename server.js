@@ -85,6 +85,41 @@ app.post('/api/stations/:id/book', async (req, res) => {
   }
 });
 
+// 5. POST Route: Release slot reservation cleanly upon cancellation/void operations
+app.post('/api/stations/:id/cancel', async (req, res) => {
+  const stationId = req.params.id;
+  console.log(`[IoT De-allocation Request] Cancellation/Release initiated for Station ID: ${stationId}`);
+
+  try {
+    const station = await db.findOne({ 
+      $or: [ { id: Number(stationId) }, { id: stationId } ] 
+    });
+
+    if (!station) {
+      return res.status(404).json({ success: false, error: "Station node not found in registry" });
+    }
+
+    // Securely decrement, preventing going below zero
+    const newBookedSlots = Math.max(0, station.bookedSlots - 1);
+
+    await db.update(
+      { $or: [ { id: Number(stationId) }, { id: stationId } ] },
+      { $set: { bookedSlots: newBookedSlots } }
+    );
+
+    const updatedStation = await db.findOne({ 
+      $or: [ { id: Number(stationId) }, { id: stationId } ] 
+    });
+
+    console.log(`[Database] Slot released clean in memory for: ${station.name}`);
+    res.json({ success: true, updatedStation });
+
+  } catch (error) {
+    console.error("Database error during cancellation loop:", error);
+    res.status(500).json({ success: false, error: "Cancellation database transaction failed." });
+  }
+});
+
 app.post('/api/register', async (req, res) => {
   try {
     console.log("Received registration data:", req.body);
@@ -95,7 +130,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// 5. Start the Application Server
+// 6. Start the Application Server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:5000`);
 });
