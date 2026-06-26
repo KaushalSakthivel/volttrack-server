@@ -48,9 +48,10 @@ app.post('/api/stations/:id/book', async (req, res) => {
   const stationId = req.params.id;
   const { user, isRebook } = req.body;
   
-  const userName = user ? user.name : "Quick Sign In Driver";
-  const userPhone = user ? user.phone : "9474747474";
-  const userEv = user ? user.evNo : "TN-47-XX-9999";
+  // Directly bind incoming user context fields cleanly without using hardcoded fallbacks
+  const userName = user && user.name ? user.name : "Quick Sign In Driver";
+  const userPhone = user && user.phone ? user.phone : "";
+  const userEv = user && user.evNo ? user.evNo : "";
 
   try {
     const station = await db.findOne({ 
@@ -62,8 +63,8 @@ app.post('/api/stations/:id/book', async (req, res) => {
       return res.status(404).json({ success: false, error: "Station node not found in registry" });
     }
 
-    // Inspect phase telemetry footprint
-    console.log(`[Allocation Request Triggered] Booking initiated for ${station.name} by user: ${userName} (EV ID: ${userEv}, Phone: ${userPhone})`);
+    // Dynamic clean log metrics
+    console.log(`[Allocation Request Triggered] Booking initiated for ${station.name} by user: ${userName} ${userEv ? `(EV ID: ${userEv}, Phone: ${userPhone})` : ''}`);
 
     if (station.bookedSlots >= station.totalSlots) {
       console.log(`[Grid Conflict] Allocation rejected. ${station.name} is fully occupied.`);
@@ -80,9 +81,9 @@ app.post('/api/stations/:id/book', async (req, res) => {
     });
     
     if (isRebook) {
-      console.log(`[Database Sync Lock] Slot rebooked by ${userName} (EV ID: ${userEv}, Phone: ${userPhone}) for ${station.name}`);
+      console.log(`[Database Sync Lock] Slot rebooked by ${userName} ${userEv ? `(EV ID: ${userEv}, Phone: ${userPhone})` : ''} for ${station.name}`);
     } else {
-      console.log(`[Database Sync Lock] Slot locked permanently for ${station.name} by user: ${userName} (EV ID: ${userEv}, Phone: ${userPhone})`);
+      console.log(`[Database Sync Lock] Slot locked permanently for ${station.name} by user: ${userName} ${userEv ? `(EV ID: ${userEv}, Phone: ${userPhone})` : ''}`);
     }
     
     res.json({ success: true, updatedStation });
@@ -98,9 +99,9 @@ app.post('/api/stations/:id/cancel', async (req, res) => {
   const stationId = req.params.id;
   const { user, type, fine, cancelCount } = req.body;
   
-  const userName = user ? user.name : "Driver";
-  const userPhone = user ? user.phone : "9474747474";
-  const userEv = user ? user.evNo : "TN-47-XX-9999";
+  const userName = user && user.name ? user.name : "Driver";
+  const userPhone = user && user.phone ? user.phone : "";
+  const userEv = user && user.evNo ? user.evNo : "";
 
   try {
     const station = await db.findOne({ 
@@ -111,18 +112,18 @@ app.post('/api/stations/:id/cancel', async (req, res) => {
       return res.status(404).json({ success: false, error: "Station node not found in registry" });
     }
 
-    // Comprehensive context tracking metrics logs
+    // Dynamic context tracking logging rules without forced tracking arrays
     if (type === 'HARD_EXPIRY') {
-      console.log(`[Telemetry Timeout Expiry] Booking hard-cancelled. ₹75 fine detected and deducted for ${userName} (EV ID: ${userEv})`);
+      console.log(`[Telemetry Timeout Expiry] Booking hard-cancelled. ₹75 fine detected and deducted for ${userName} ${userEv ? `(EV ID: ${userEv})` : ''}`);
     } else if (type === 'BUFFER_CANCEL') {
-      console.log(`[Buffer Cancel Activity] Cancelled during buffer phase by ${userName} (EV ID: ${userEv}). Final fine of ₹${fine} registered and locked.`);
+      console.log(`[Buffer Cancel Activity] Cancelled during buffer phase by ${userName} ${userEv ? `(EV ID: ${userEv})` : ''}. Final fine of ₹${fine} registered and locked.`);
     } else if (type === 'MANUAL_VOID') {
       console.log(`[Freeze Advantage Voided] Manual link bypass action triggered by user: ${userName} for ${station.name}. Pipeline exposed.`);
     } else {
       if (cancelCount > 1) {
-        console.log(`[Core Cancellation Activity] Slot cancelled again by ${userName} (EV ID: ${userEv}, Phone: ${userPhone}) for ${station.name}`);
+        console.log(`[Core Cancellation Activity] Slot cancelled again by ${userName} ${userEv ? `(EV ID: ${userEv}, Phone: ${userPhone})` : ''} for ${station.name}`);
       } else {
-        console.log(`[Core Cancellation Activity] It is cancelled by ${userName} (EV ID: ${userEv}, Phone: ${userPhone}) for ${station.name}`);
+        console.log(`[Core Cancellation Activity] It is cancelled by ${userName} ${userEv ? `(EV ID: ${userEv}, Phone: ${userPhone})` : ''} for ${station.name}`);
       }
     }
 
@@ -161,7 +162,7 @@ app.post('/api/register', async (req, res) => {
 // POST Route: Log continuous stream metrics for rolling minute-by-minute buffer tracking fine states
 app.post('/api/audit/fine', (req, res) => {
   const { name, minutes, fineAmount, evNo } = req.body;
-  const identifier = name ? `${name} (EV ID: ${evNo || 'TN-47-XX-9999'})` : 'Guest Driver';
+  const identifier = name ? `${name} ${evNo ? `(EV ID: ${evNo})` : ''}` : 'Guest Driver';
   console.log(`[Fine Tracking Metric Loop] ₹${fineAmount} fine is held for ${identifier} | Continuous Elapsed: ${minutes} Min`);
   res.json({ success: true });
 });
